@@ -162,6 +162,18 @@
             border-color: #5568d3;
         }
 
+        .minigame-btn.played {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .minigame-btn.played:hover {
+            background: #d1d5db;
+            transform: none;
+        }
+
         .minigame-description {
             font-size: 12px;
             font-weight: normal;
@@ -273,19 +285,19 @@
         <div id="round-screen" class="card hidden">
             <h2>Select Minigame</h2>
             <div class="minigame-grid">
-                <button class="minigame-btn" onclick="selectMinigame('golf')">
+                <button class="minigame-btn" data-minigame="golf" onclick="selectMinigame('golf')">
                     ⛳ Golf
                     <div class="minigame-description">Lowest score wins</div>
                 </button>
-                <button class="minigame-btn" onclick="selectMinigame('bus')">
+                <button class="minigame-btn" data-minigame="bus" onclick="selectMinigame('bus')">
                     🚌 Stop the Bus
                     <div class="minigame-description">Highest score wins</div>
                 </button>
-                <button class="minigame-btn" onclick="selectMinigame('dice')">
+                <button class="minigame-btn" data-minigame="dice" onclick="selectMinigame('dice')">
                     🎲 Dice
                     <div class="minigame-description">Highest score wins</div>
                 </button>
-                <button class="minigame-btn" onclick="selectMinigame('fingers')">
+                <button class="minigame-btn" data-minigame="fingers" onclick="selectMinigame('fingers')">
                     ✋ Fingers
                     <div class="minigame-description">First out wins</div>
                 </button>
@@ -360,6 +372,7 @@
         let currentScores = [];
         let tiedPlayers = [];
         let gameHistory = [];
+        let playedMinigames = [];
 
         // Setup Functions
         function addPlayer() {
@@ -414,6 +427,11 @@
 
         // Round Selection Functions
         function selectMinigame(type) {
+            // Don't allow selecting already played minigames
+            if (playedMinigames.includes(type)) {
+                return;
+            }
+
             selectedMinigame = type;
 
             document.querySelectorAll('.minigame-btn').forEach(btn => {
@@ -585,6 +603,9 @@
                 }))
             });
 
+            // Mark this minigame as played
+            playedMinigames.push(selectedMinigame);
+
             showScoreboard();
         }
 
@@ -618,6 +639,14 @@
                     ${h.results.map(r => `${r.player}: ${r.score} (${r.points} pts)`).join(', ')}
                 </div>
             `).join('');
+
+            // If all 4 minigames have been played, hide Next Round button
+            const nextRoundBtn = document.querySelector('#scoreboard-screen .btn-primary');
+            if (playedMinigames.length >= 4) {
+                nextRoundBtn.style.display = 'none';
+            } else {
+                nextRoundBtn.style.display = 'block';
+            }
         }
 
         function nextRound() {
@@ -628,8 +657,13 @@
             document.getElementById('scoreboard-screen').classList.add('hidden');
             document.getElementById('round-screen').classList.remove('hidden');
 
+            // Update minigame buttons - mark played ones as disabled
             document.querySelectorAll('.minigame-btn').forEach(btn => {
                 btn.classList.remove('selected');
+                const minigameType = btn.getAttribute('data-minigame');
+                if (playedMinigames.includes(minigameType)) {
+                    btn.classList.add('played');
+                }
             });
             document.getElementById('start-entry-btn').disabled = true;
         }
@@ -660,6 +694,7 @@
             currentScores = [];
             tiedPlayers = [];
             gameHistory = [];
+            playedMinigames = [];
 
             document.getElementById('winner-screen').classList.add('hidden');
             document.getElementById('setup-screen').classList.remove('hidden');
