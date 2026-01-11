@@ -208,6 +208,19 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
+        #running-scoreboard .scoreboard-table th,
+        #running-scoreboard .scoreboard-table td {
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        #running-scoreboard .scoreboard-table th:first-child,
+        #running-scoreboard .scoreboard-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+
         .scoreboard-table th {
             background: #f5f5f5;
             font-weight: 600;
@@ -285,6 +298,16 @@
         <!-- Round Selection Screen -->
         <div id="round-screen" class="card hidden">
             <h2>Select Minigame</h2>
+            <div id="running-scoreboard" class="hidden" style="margin-bottom: 20px;">
+                <table class="scoreboard-table">
+                    <thead>
+                        <tr id="running-scoreboard-header">
+                            <th>Player</th>
+                        </tr>
+                    </thead>
+                    <tbody id="running-scoreboard-body"></tbody>
+                </table>
+            </div>
             <div class="minigame-grid">
                 <button class="minigame-btn" data-minigame="golf" onclick="selectMinigame('golf')">
                     ⛳ Golf
@@ -425,6 +448,9 @@
                 btn.classList.remove('played');
                 btn.classList.remove('selected');
             });
+
+            // Hide running scoreboard at start
+            document.getElementById('running-scoreboard').classList.add('hidden');
         }
 
         // Round Selection Functions
@@ -692,7 +718,64 @@
                     btn.classList.add('played');
                 }
             });
-            document.getElementById('start-entry-btn').disabled = true;
+
+            // Update running scoreboard
+            updateRunningScoreboard();
+        }
+
+        function updateRunningScoreboard() {
+            if (playedMinigames.length === 0) {
+                document.getElementById('running-scoreboard').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('running-scoreboard').classList.remove('hidden');
+
+            const minigameNames = {
+                'golf': '⛳',
+                'bus': '🚌',
+                'dice': '🎲',
+                'fingers': '✋'
+            };
+
+            // Build header with played minigames
+            const header = document.getElementById('running-scoreboard-header');
+            header.innerHTML = '<th>Player</th>' +
+                playedMinigames.map(mg => `<th>${minigameNames[mg]}</th>`).join('') +
+                '<th>Total</th>';
+
+            // Build body with player rows
+            const tbody = document.getElementById('running-scoreboard-body');
+
+            // Sort players by total points (lowest wins)
+            const sortedPlayers = [...players].sort((a, b) => a.totalPoints - b.totalPoints);
+
+            tbody.innerHTML = sortedPlayers.map((player, index) => {
+                // Get placements for each played minigame
+                const placements = playedMinigames.map(mg => {
+                    const round = player.rounds.find(r => r.minigame === mg);
+                    if (round) {
+                        return getOrdinal(round.points);
+                    }
+                    return '-';
+                });
+
+                const rowClass = index === 0 ? 'class="place-1"' : '';
+
+                return `
+                    <tr ${rowClass}>
+                        <td>${player.name}</td>
+                        ${placements.map(p => `<td>${p}</td>`).join('')}
+                        <td><strong>${player.totalPoints}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getOrdinal(num) {
+            const suffixes = ['th', 'st', 'nd', 'rd'];
+            const v = num % 100;
+            return num + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
         }
 
         function endGame() {
