@@ -303,7 +303,6 @@
                     <div class="minigame-description">First out wins</div>
                 </button>
             </div>
-            <button class="btn-primary btn-full" onclick="startScoreEntry()" id="start-entry-btn" disabled>Next</button>
         </div>
 
         <!-- Score Entry Screen -->
@@ -435,12 +434,8 @@
 
             selectedMinigame = type;
 
-            document.querySelectorAll('.minigame-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-
-            event.target.closest('.minigame-btn').classList.add('selected');
-            document.getElementById('start-entry-btn').disabled = false;
+            // Directly start score entry
+            startScoreEntry();
         }
 
         function startScoreEntry() {
@@ -526,27 +521,33 @@
         }
 
         function showTieBreaker(sortedScores, ties) {
+            // Store the sorted scores and tie information for later use
+            window.currentSortedScores = sortedScores;
+            window.currentTies = ties;
+
             tiedPlayers = [];
             let tieMessage = '';
 
             ties.forEach(tieGroup => {
                 const uniqueTied = [...new Set(tieGroup)];
                 const tiedPlayerNames = uniqueTied.map(i => players[sortedScores[i].playerIndex].name);
-                tiedPlayers.push(...uniqueTied.map(i => sortedScores[i].playerIndex));
+                tiedPlayers.push(...uniqueTied.map(i => ({
+                    sortedIndex: i,
+                    playerIndex: sortedScores[i].playerIndex,
+                    originalScore: sortedScores[i].score
+                })));
                 tieMessage += `Tied: ${tiedPlayerNames.join(', ')}<br>`;
             });
-
-            tiedPlayers = [...new Set(tiedPlayers)];
 
             document.getElementById('tie-message').innerHTML = tieMessage;
             document.getElementById('score-screen').classList.add('hidden');
             document.getElementById('tie-screen').classList.remove('hidden');
 
             const container = document.getElementById('tie-entries');
-            container.innerHTML = tiedPlayers.map(playerIndex => `
+            container.innerHTML = tiedPlayers.map(tiedPlayer => `
                 <div class="score-entry">
-                    <label>${players[playerIndex].name}</label>
-                    <input type="number" id="tie-${playerIndex}" placeholder="Tie breaker score" step="any">
+                    <label>${players[tiedPlayer.playerIndex].name}</label>
+                    <input type="number" id="tie-${tiedPlayer.playerIndex}" placeholder="Tie breaker score" step="any">
                 </div>
             `).join('');
         }
@@ -554,30 +555,45 @@
         function submitTieBreaker() {
             const tieScores = [];
 
-            for (let playerIndex of tiedPlayers) {
-                const input = document.getElementById(`tie-${playerIndex}`);
+            for (let tiedPlayer of tiedPlayers) {
+                const input = document.getElementById(`tie-${tiedPlayer.playerIndex}`);
                 const score = parseFloat(input.value);
 
                 if (isNaN(score)) {
-                    alert(`Please enter a valid tie breaker score for ${players[playerIndex].name}`);
+                    alert(`Please enter a valid tie breaker score for ${players[tiedPlayer.playerIndex].name}`);
                     input.focus();
                     return;
                 }
 
                 tieScores.push({
-                    playerIndex: playerIndex,
-                    score: score
+                    ...tiedPlayer,
+                    tieBreakerScore: score
                 });
             }
 
-            // Replace original scores with tie breaker scores
-            tieScores.forEach(tie => {
-                const index = currentScores.findIndex(s => s.playerIndex === tie.playerIndex);
-                currentScores[index].score = tie.score;
+            // Sort tied players by tie breaker score (same rules as original game)
+            if (selectedMinigame === 'golf' || selectedMinigame === 'fingers') {
+                tieScores.sort((a, b) => a.tieBreakerScore - b.tieBreakerScore);
+            } else {
+                tieScores.sort((a, b) => b.tieBreakerScore - a.tieBreakerScore);
+            }
+
+            // Create final sorted array with tie breaker ordering applied
+            const finalSorted = [...window.currentSortedScores];
+
+            // Get the sorted indices that need to be filled
+            const sortedIndices = tieScores.map(ts => ts.sortedIndex).sort((a, b) => a - b);
+
+            // Replace the tied positions with the tie breaker sorted order
+            tieScores.forEach((tiedScore, newIndex) => {
+                finalSorted[sortedIndices[newIndex]] = {
+                    playerIndex: tiedScore.playerIndex,
+                    score: tiedScore.originalScore // Keep original score for display
+                };
             });
 
             document.getElementById('tie-screen').classList.add('hidden');
-            calculateRankings();
+            assignPoints(finalSorted);
         }
 
         function assignPoints(sortedScores) {
