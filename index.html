@@ -298,16 +298,6 @@
         <!-- Round Selection Screen -->
         <div id="round-screen" class="card hidden">
             <h2>Select Minigame</h2>
-            <div id="running-scoreboard" class="hidden" style="margin-bottom: 20px;">
-                <table class="scoreboard-table">
-                    <thead>
-                        <tr id="running-scoreboard-header">
-                            <th>Player</th>
-                        </tr>
-                    </thead>
-                    <tbody id="running-scoreboard-body"></tbody>
-                </table>
-            </div>
             <div class="minigame-grid">
                 <button class="minigame-btn" data-minigame="golf" onclick="selectMinigame('golf')">
                     ⛳ Golf
@@ -321,6 +311,16 @@
                 <button class="minigame-btn" data-minigame="fingers" onclick="selectMinigame('fingers')">
                     ✋ Fingers
                 </button>
+            </div>
+            <div id="running-scoreboard" class="hidden" style="margin-top: 20px;">
+                <table class="scoreboard-table">
+                    <thead>
+                        <tr id="running-scoreboard-header">
+                            <th>Player</th>
+                        </tr>
+                    </thead>
+                    <tbody id="running-scoreboard-body"></tbody>
+                </table>
             </div>
         </div>
 
@@ -366,9 +366,9 @@
         <!-- Winner Screen -->
         <div id="winner-screen" class="card hidden">
             <div class="winner-display">
-                <div class="trophy">🏆</div>
+                <div class="trophy">💩</div>
                 <h2 id="winner-name"></h2>
-                <p>wins The Ultimate Game!</p>
+                <p>loses The Ultimate Game!</p>
             </div>
             <table class="scoreboard-table">
                 <thead>
@@ -785,9 +785,9 @@
             document.getElementById('winner-screen').classList.remove('hidden');
 
             const sortedPlayers = [...players].sort((a, b) => a.totalPoints - b.totalPoints);
-            const winner = sortedPlayers[0];
+            const loser = sortedPlayers[sortedPlayers.length - 1]; // Highest points = loser
 
-            document.getElementById('winner-name').textContent = winner.name;
+            document.getElementById('winner-name').textContent = loser.name;
 
             const tbody = document.getElementById('final-scoreboard');
             tbody.innerHTML = sortedPlayers.map((player, index) => `
