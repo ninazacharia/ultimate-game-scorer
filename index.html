@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Ultimate Game Scorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Player Setup */
+        .player-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        input[type="text"], input[type="number"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .player-list {
+            margin-top: 16px;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Minigame Selection */
+        .minigame-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .minigame-btn {
+            padding: 20px;
+            background: #f5f5f5;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .minigame-btn:hover {
+            background: #e8e8e8;
+        }
+
+        .minigame-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5568d3;
+        }
+
+        .minigame-description {
+            font-size: 12px;
+            font-weight: normal;
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        /* Score Entry */
+        .score-entry {
+            margin-bottom: 12px;
+        }
+
+        .score-entry label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #555;
+        }
+
+        /* Scoreboard */
+        .scoreboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .scoreboard-table th,
+        .scoreboard-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .scoreboard-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .scoreboard-table .place-1 {
+            background: #fef3c7;
+        }
+
+        .round-history {
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .round-item {
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .round-item strong {
+            color: #667eea;
+        }
+
+        .tie-warning {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tie-warning h3 {
+            color: #f59e0b;
+            margin-bottom: 8px;
+        }
+
+        .winner-display {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .winner-display h2 {
+            color: #f59e0b;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .winner-display .trophy {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 The Ultimate Game</h1>
+
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="card">
+            <h2>Setup Game</h2>
+            <div class="player-input-group">
+                <input type="text" id="player-name-input" placeholder="Enter player name">
+                <button class="btn-primary" onclick="addPlayer()">Add</button>
+            </div>
+            <div class="player-list" id="player-list"></div>
+            <button class="btn-success btn-full" onclick="startGame()" id="start-game-btn" disabled>Start Game</button>
+        </div>
+
+        <!-- Round Selection Screen -->
+        <div id="round-screen" class="card hidden">
+            <h2>Select Minigame</h2>
+            <div class="minigame-grid">
+                <button class="minigame-btn" onclick="selectMinigame('golf')">
+                    ⛳ Golf
+                    <div class="minigame-description">Lowest score wins</div>
+                </button>
+                <button class="minigame-btn" onclick="selectMinigame('bus')">
+                    🚌 Stop the Bus
+                    <div class="minigame-description">Highest score wins</div>
+                </button>
+                <button class="minigame-btn" onclick="selectMinigame('dice')">
+                    🎲 Dice
+                    <div class="minigame-description">Highest score wins</div>
+                </button>
+                <button class="minigame-btn" onclick="selectMinigame('fingers')">
+                    ✋ Fingers
+                    <div class="minigame-description">First out wins</div>
+                </button>
+            </div>
+            <button class="btn-primary btn-full" onclick="startScoreEntry()" id="start-entry-btn" disabled>Next</button>
+        </div>
+
+        <!-- Score Entry Screen -->
+        <div id="score-screen" class="card hidden">
+            <h2>Enter Scores: <span id="current-minigame"></span></h2>
+            <div id="score-entries"></div>
+            <button class="btn-success btn-full" onclick="submitScores()">Submit Scores</button>
+        </div>
+
+        <!-- Tie Breaker Screen -->
+        <div id="tie-screen" class="card hidden">
+            <div class="tie-warning">
+                <h3>⚠️ Tie Detected!</h3>
+                <p id="tie-message"></p>
+            </div>
+            <h2>Tie Breaker</h2>
+            <div id="tie-entries"></div>
+            <button class="btn-success btn-full" onclick="submitTieBreaker()">Submit Results</button>
+        </div>
+
+        <!-- Scoreboard Screen -->
+        <div id="scoreboard-screen" class="card hidden">
+            <h2>Scoreboard</h2>
+            <table class="scoreboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="scoreboard-body"></tbody>
+            </table>
+            <div class="round-history">
+                <h3>Round History</h3>
+                <div id="round-history"></div>
+            </div>
+            <button class="btn-primary btn-full" onclick="nextRound()">Next Round</button>
+            <button class="btn-danger btn-full" onclick="endGame()">End Game</button>
+        </div>
+
+        <!-- Winner Screen -->
+        <div id="winner-screen" class="card hidden">
+            <div class="winner-display">
+                <div class="trophy">🏆</div>
+                <h2 id="winner-name"></h2>
+                <p>wins The Ultimate Game!</p>
+            </div>
+            <table class="scoreboard-table">
+                <thead>
+                    <tr>
+                        <th>Final Rank</th>
+                        <th>Player</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="final-scoreboard"></tbody>
+            </table>
+            <button class="btn-primary btn-full" onclick="resetGame()">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+        let currentRound = 0;
+        let selectedMinigame = null;
+        let currentScores = [];
+        let tiedPlayers = [];
+        let gameHistory = [];
+
+        // Setup Functions
+        function addPlayer() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim();
+
+            if (name === '') return;
+            if (players.some(p => p.name === name)) {
+                alert('Player already exists!');
+                return;
+            }
+
+            players.push({
+                name: name,
+                totalPoints: 0,
+                rounds: []
+            });
+
+            updatePlayerList();
+            input.value = '';
+            input.focus();
+        }
+
+        function removePlayer(index) {
+            players.splice(index, 1);
+            updatePlayerList();
+        }
+
+        function updatePlayerList() {
+            const list = document.getElementById('player-list');
+            const startBtn = document.getElementById('start-game-btn');
+
+            if (players.length === 0) {
+                list.innerHTML = '<p style="color: #999; text-align: center;">No players added yet</p>';
+                startBtn.disabled = true;
+            } else {
+                list.innerHTML = players.map((player, index) => `
+                    <div class="player-item">
+                        <span>${player.name}</span>
+                        <button class="btn-danger btn-small" onclick="removePlayer(${index})">Remove</button>
+                    </div>
+                `).join('');
+                startBtn.disabled = players.length < 2;
+            }
+        }
+
+        function startGame() {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('round-screen').classList.remove('hidden');
+            currentRound = 1;
+        }
+
+        // Round Selection Functions
+        function selectMinigame(type) {
+            selectedMinigame = type;
+
+            document.querySelectorAll('.minigame-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            event.target.closest('.minigame-btn').classList.add('selected');
+            document.getElementById('start-entry-btn').disabled = false;
+        }
+
+        function startScoreEntry() {
+            document.getElementById('round-screen').classList.add('hidden');
+            document.getElementById('score-screen').classList.remove('hidden');
+
+            const minigameNames = {
+                'golf': '⛳ Golf',
+                'bus': '🚌 Stop the Bus',
+                'dice': '🎲 Dice',
+                'fingers': '✋ Fingers'
+            };
+
+            document.getElementById('current-minigame').textContent = minigameNames[selectedMinigame];
+
+            const container = document.getElementById('score-entries');
+            container.innerHTML = players.map((player, index) => `
+                <div class="score-entry">
+                    <label>${player.name}</label>
+                    <input type="number" id="score-${index}" placeholder="Enter score" step="any">
+                </div>
+            `).join('');
+
+            document.getElementById('score-0').focus();
+        }
+
+        // Scoring Functions
+        function submitScores() {
+            currentScores = [];
+
+            for (let i = 0; i < players.length; i++) {
+                const input = document.getElementById(`score-${i}`);
+                const score = parseFloat(input.value);
+
+                if (isNaN(score)) {
+                    alert(`Please enter a valid score for ${players[i].name}`);
+                    input.focus();
+                    return;
+                }
+
+                currentScores.push({
+                    playerIndex: i,
+                    score: score
+                });
+            }
+
+            calculateRankings();
+        }
+
+        function calculateRankings() {
+            // Sort based on minigame type
+            const sortedScores = [...currentScores];
+
+            if (selectedMinigame === 'golf' || selectedMinigame === 'fingers') {
+                // Lower is better
+                sortedScores.sort((a, b) => a.score - b.score);
+            } else {
+                // Higher is better (bus, dice)
+                sortedScores.sort((a, b) => b.score - a.score);
+            }
+
+            // Check for ties
+            const ties = [];
+            for (let i = 0; i < sortedScores.length - 1; i++) {
+                if (sortedScores[i].score === sortedScores[i + 1].score) {
+                    if (ties.length === 0 || ties[ties.length - 1][ties[ties.length - 1].length - 1] === i - 1) {
+                        if (ties.length === 0 || !ties[ties.length - 1].includes(i)) {
+                            ties.push([i, i + 1]);
+                        } else {
+                            ties[ties.length - 1].push(i + 1);
+                        }
+                    } else {
+                        ties.push([i, i + 1]);
+                    }
+                }
+            }
+
+            if (ties.length > 0) {
+                showTieBreaker(sortedScores, ties);
+            } else {
+                assignPoints(sortedScores);
+            }
+        }
+
+        function showTieBreaker(sortedScores, ties) {
+            tiedPlayers = [];
+            let tieMessage = '';
+
+            ties.forEach(tieGroup => {
+                const uniqueTied = [...new Set(tieGroup)];
+                const tiedPlayerNames = uniqueTied.map(i => players[sortedScores[i].playerIndex].name);
+                tiedPlayers.push(...uniqueTied.map(i => sortedScores[i].playerIndex));
+                tieMessage += `Tied: ${tiedPlayerNames.join(', ')}<br>`;
+            });
+
+            tiedPlayers = [...new Set(tiedPlayers)];
+
+            document.getElementById('tie-message').innerHTML = tieMessage;
+            document.getElementById('score-screen').classList.add('hidden');
+            document.getElementById('tie-screen').classList.remove('hidden');
+
+            const container = document.getElementById('tie-entries');
+            container.innerHTML = tiedPlayers.map(playerIndex => `
+                <div class="score-entry">
+                    <label>${players[playerIndex].name}</label>
+                    <input type="number" id="tie-${playerIndex}" placeholder="Tie breaker score" step="any">
+                </div>
+            `).join('');
+        }
+
+        function submitTieBreaker() {
+            const tieScores = [];
+
+            for (let playerIndex of tiedPlayers) {
+                const input = document.getElementById(`tie-${playerIndex}`);
+                const score = parseFloat(input.value);
+
+                if (isNaN(score)) {
+                    alert(`Please enter a valid tie breaker score for ${players[playerIndex].name}`);
+                    input.focus();
+                    return;
+                }
+
+                tieScores.push({
+                    playerIndex: playerIndex,
+                    score: score
+                });
+            }
+
+            // Replace original scores with tie breaker scores
+            tieScores.forEach(tie => {
+                const index = currentScores.findIndex(s => s.playerIndex === tie.playerIndex);
+                currentScores[index].score = tie.score;
+            });
+
+            document.getElementById('tie-screen').classList.add('hidden');
+            calculateRankings();
+        }
+
+        function assignPoints(sortedScores) {
+            // Assign points based on rank (1st = 1 point, 2nd = 2 points, etc.)
+            sortedScores.forEach((score, rank) => {
+                const player = players[score.playerIndex];
+                const points = rank + 1;
+                player.totalPoints += points;
+                player.rounds.push({
+                    round: currentRound,
+                    minigame: selectedMinigame,
+                    score: score.score,
+                    points: points
+                });
+            });
+
+            gameHistory.push({
+                round: currentRound,
+                minigame: selectedMinigame,
+                results: sortedScores.map((s, rank) => ({
+                    player: players[s.playerIndex].name,
+                    score: s.score,
+                    points: rank + 1
+                }))
+            });
+
+            showScoreboard();
+        }
+
+        function showScoreboard() {
+            document.getElementById('scoreboard-screen').classList.remove('hidden');
+
+            // Sort players by total points (lowest wins)
+            const sortedPlayers = [...players].sort((a, b) => a.totalPoints - b.totalPoints);
+
+            const tbody = document.getElementById('scoreboard-body');
+            tbody.innerHTML = sortedPlayers.map((player, index) => `
+                <tr ${index === 0 ? 'class="place-1"' : ''}>
+                    <td>${index + 1}</td>
+                    <td>${player.name}</td>
+                    <td>${player.totalPoints}</td>
+                </tr>
+            `).join('');
+
+            // Update round history
+            const historyDiv = document.getElementById('round-history');
+            const minigameNames = {
+                'golf': '⛳ Golf',
+                'bus': '🚌 Stop the Bus',
+                'dice': '🎲 Dice',
+                'fingers': '✋ Fingers'
+            };
+
+            historyDiv.innerHTML = gameHistory.map(h => `
+                <div class="round-item">
+                    <strong>Round ${h.round}: ${minigameNames[h.minigame]}</strong><br>
+                    ${h.results.map(r => `${r.player}: ${r.score} (${r.points} pts)`).join(', ')}
+                </div>
+            `).join('');
+        }
+
+        function nextRound() {
+            currentRound++;
+            selectedMinigame = null;
+            currentScores = [];
+
+            document.getElementById('scoreboard-screen').classList.add('hidden');
+            document.getElementById('round-screen').classList.remove('hidden');
+
+            document.querySelectorAll('.minigame-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('start-entry-btn').disabled = true;
+        }
+
+        function endGame() {
+            document.getElementById('scoreboard-screen').classList.add('hidden');
+            document.getElementById('winner-screen').classList.remove('hidden');
+
+            const sortedPlayers = [...players].sort((a, b) => a.totalPoints - b.totalPoints);
+            const winner = sortedPlayers[0];
+
+            document.getElementById('winner-name').textContent = winner.name;
+
+            const tbody = document.getElementById('final-scoreboard');
+            tbody.innerHTML = sortedPlayers.map((player, index) => `
+                <tr ${index === 0 ? 'class="place-1"' : ''}>
+                    <td>${index + 1}</td>
+                    <td>${player.name}</td>
+                    <td>${player.totalPoints}</td>
+                </tr>
+            `).join('');
+        }
+
+        function resetGame() {
+            players = [];
+            currentRound = 0;
+            selectedMinigame = null;
+            currentScores = [];
+            tiedPlayers = [];
+            gameHistory = [];
+
+            document.getElementById('winner-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            updatePlayerList();
+        }
+
+        // Enter key handling
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement.id === 'player-name-input') {
+                    addPlayer();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
