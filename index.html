@@ -288,19 +288,15 @@
             <div class="minigame-grid">
                 <button class="minigame-btn" data-minigame="golf" onclick="selectMinigame('golf')">
                     ⛳ Golf
-                    <div class="minigame-description">Lowest score wins</div>
                 </button>
                 <button class="minigame-btn" data-minigame="bus" onclick="selectMinigame('bus')">
                     🚌 Stop the Bus
-                    <div class="minigame-description">Highest score wins</div>
                 </button>
                 <button class="minigame-btn" data-minigame="dice" onclick="selectMinigame('dice')">
                     🎲 Dice
-                    <div class="minigame-description">Highest score wins</div>
                 </button>
                 <button class="minigame-btn" data-minigame="fingers" onclick="selectMinigame('fingers')">
                     ✋ Fingers
-                    <div class="minigame-description">First out wins</div>
                 </button>
             </div>
         </div>
@@ -423,6 +419,12 @@
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('round-screen').classList.remove('hidden');
             currentRound = 1;
+
+            // Reset all minigame buttons to remove "played" class
+            document.querySelectorAll('.minigame-btn').forEach(btn => {
+                btn.classList.remove('played');
+                btn.classList.remove('selected');
+            });
         }
 
         // Round Selection Functions
@@ -455,7 +457,7 @@
             container.innerHTML = players.map((player, index) => `
                 <div class="score-entry">
                     <label>${player.name}</label>
-                    <input type="number" id="score-${index}" placeholder="Enter score" step="any">
+                    <input type="number" inputmode="decimal" id="score-${index}" placeholder="Enter score" step="any">
                 </div>
             `).join('');
 
@@ -547,7 +549,7 @@
             container.innerHTML = tiedPlayers.map(tiedPlayer => `
                 <div class="score-entry">
                     <label>${players[tiedPlayer.playerIndex].name}</label>
-                    <input type="number" id="tie-${tiedPlayer.playerIndex}" placeholder="Tie breaker score" step="any">
+                    <input type="number" inputmode="decimal" id="tie-${tiedPlayer.playerIndex}" placeholder="Tie breaker score" step="any">
                 </div>
             `).join('');
         }
