@@ -117,6 +117,7 @@
         .btn-full {
             width: 100%;
             margin-top: 8px;
+            margin-bottom: 16px;
         }
 
         .player-list {
@@ -273,12 +274,12 @@
         <!-- Setup Screen -->
         <div id="setup-screen" class="card">
             <h2>Setup Game</h2>
+            <button class="btn-success btn-full" onclick="startGame()" id="start-game-btn" disabled>Start Game</button>
             <div class="player-input-group">
                 <input type="text" id="player-name-input" placeholder="Enter player name">
                 <button class="btn-primary" onclick="addPlayer()">Add</button>
             </div>
             <div class="player-list" id="player-list"></div>
-            <button class="btn-success btn-full" onclick="startGame()" id="start-game-btn" disabled>Start Game</button>
         </div>
 
         <!-- Round Selection Screen -->
@@ -606,7 +607,13 @@
             // Mark this minigame as played
             playedMinigames.push(selectedMinigame);
 
-            showScoreboard();
+            // If all 4 minigames are done, show final results
+            if (playedMinigames.length >= 4) {
+                endGame();
+            } else {
+                // Otherwise go back to minigame selection
+                nextRound();
+            }
         }
 
         function showScoreboard() {
@@ -654,6 +661,8 @@
             selectedMinigame = null;
             currentScores = [];
 
+            // Hide any visible screens
+            document.getElementById('score-screen').classList.add('hidden');
             document.getElementById('scoreboard-screen').classList.add('hidden');
             document.getElementById('round-screen').classList.remove('hidden');
 
@@ -669,6 +678,8 @@
         }
 
         function endGame() {
+            // Hide any visible screens
+            document.getElementById('score-screen').classList.add('hidden');
             document.getElementById('scoreboard-screen').classList.add('hidden');
             document.getElementById('winner-screen').classList.remove('hidden');
 
